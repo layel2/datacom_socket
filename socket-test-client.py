@@ -3,7 +3,13 @@
 # Import socket module 
 import socket
 import hashlib	
-from cryptography.fernet import Fernet		 
+from cryptography.fernet import Fernet	 
+
+def load_key():
+    """
+    Loads the key named `secret.key` from the current directory.
+    """
+    return open("secret.key", "rb").read()
 
 # Create a socket object 
 s = socket.socket()				
@@ -13,12 +19,13 @@ FRAGMENT_HEADER_SIZE = 2 #bytes
 CHECKSUM_SIZE = 16 
 DATA_SIZE = PACKGATE_LEN - FRAGMENT_HEADER_SIZE - CHECKSUM_SIZE
 
-key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+#key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+key = load_key()
 f = Fernet(key)
 
 # connect to the server on local computer 
-port = 12345
-s.connect(('127.0.0.1', port)) 
+port = 1234
+s.connect(('192.168.43.75', port)) 
 get_data = bytes()
 # receive data from the server 
 frag_num = int(s.recv(8))

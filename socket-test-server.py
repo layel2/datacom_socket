@@ -10,8 +10,14 @@ from cryptography.fernet import Fernet
 s = socket.socket()
 print ("Socket successfully created")
 
-port = 12345		
-s.bind(('', port))		 
+def load_key():
+    """
+    Loads the key named `secret.key` from the current directory.
+    """
+    return open("secret.key", "rb").read()
+
+port = 1234
+s.bind(('192.168.43.75', port))		 
 print ("socket binded to %s" %(port) )
 
 # put the socket into listening mode 
@@ -20,17 +26,18 @@ print ("socket is listening")
 
 
 read_data = open('4thai.png','rb').read()
-key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+#encryption
+#key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+key = load_key()
 f = Fernet(key)
 data = f.encrypt(read_data)
 
 PACKGATE_LEN = 2048 #bytes
 FRAGMENT_HEADER_SIZE = 2 #bytes
-CHECKSUM_SIZE = 16 
+CHECKSUM_SIZE = 16 #MD5
 DATA_SIZE = PACKGATE_LEN - FRAGMENT_HEADER_SIZE - CHECKSUM_SIZE#bytes
 #DATA_LENGTH = FRAGMENT_SIZE + PACKGATE_SIZE + CHECKSUM_SIZE
 fragmnet_num = int(math.ceil(len(data)/DATA_SIZE))
-
 
 
 while True: 
@@ -44,5 +51,6 @@ while True:
         frag_data = data[i*DATA_SIZE:(i+1)*DATA_SIZE]
         frag_md5 = hashlib.md5(frag_data).digest()
         c.send(frag_head+frag_md5+frag_data) 
-    #c.send(b'aaasd') 
+    #c.send(b'aaasd')
+    #print(s.recv(1024)) 
     c.close() 
