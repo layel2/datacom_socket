@@ -14,23 +14,62 @@ def load_key():
 # Create a socket object 
 s = socket.socket()				
 
+IS_ENCRYPT = True
 PACKGATE_LEN = 2048 #bytes
 FRAGMENT_HEADER_SIZE = 2 #bytes
 CHECKSUM_SIZE = 16 
 DATA_SIZE = PACKGATE_LEN - FRAGMENT_HEADER_SIZE - CHECKSUM_SIZE
 
-#key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
-key = load_key()
-f = Fernet(key)
 
 # connect to the server on local computer 
 port = 1234
-s.connect(('192.168.43.75', port)) 
-get_data = bytes()
+s.connect(('', port)) 
+get_data = []
 # receive data from the server 
-frag_num = int(s.recv(8))
-print(frag_num,type(frag_num))
-for i in range(frag_num):
+#frag_num = int(s.recv(8))
+#print(frag_num,type(frag_num))
+rev_pkg = s.recv(PACKGATE_LEN)
+get_data.append(rev_pkg)
+print(rev_pkg)
+while(rev_pkg!=bytes()):
+    rev_pkg = s.recv(PACKGATE_LEN)
+    if(rev_pkg==bytes()):
+        break
+    print(rev_pkg)
+    get_data.append(rev_pkg)
+
+print("\n")
+num_frag = len(get_data)
+frag_dict = {}
+for i,pkg in enumerate(get_data):
+    pkg_frag = pkg[0]-48
+    frag_dict[pkg_frag] = i
+
+combine_data = bytes()
+
+for frag in sorted(frag_dict.values()):
+    combine_data += get_data[frag][2:]
+
+rev_msg = combine_data[:-16]
+rev_checksum = combine_data[-16:]
+
+print("Recive message is ",rev_msg.decode('utf-8'))
+print("Recive md5 is ",rev_checksum)
+msg_checksum = hashlib.md5(rev_msg).digest()
+print("Checksum match :",msg_checksum==rev_checksum)
+
+key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+#key = load_key()
+f = Fernet(key)
+if(IS_ENCRYPT):
+    decrypt_data = f.decrypt(rev_msg)
+print("Decrypt message is ",decrypt_data.decode('utf-8'))
+
+
+
+#print(get_data,type(get_data))
+'''
+for i in range(2):
     rev_pkg = s.recv(PACKGATE_LEN)
     num_frag = rev_pkg[:FRAGMENT_HEADER_SIZE]
     rev_md5 = rev_pkg[FRAGMENT_HEADER_SIZE:FRAGMENT_HEADER_SIZE+CHECKSUM_SIZE]
@@ -38,12 +77,13 @@ for i in range(frag_num):
     md5 = hashlib.md5(rev_data).digest()
     if(rev_md5 != md5):
         print('loss pkg')
+    print(rev_pkg==bytes())
     get_data += rev_data
-
-decryp_data = f.decrypt(get_data)
+'''
+#decryp_data = f.decrypt(get_data)
 #print(s.recv(2048))
 # close the connection 
 s.close()	 
-out = open('rec.png','wb')
-out.write(decryp_data)
-out.close()
+#out = open('rec.png','wb')
+#out.write(decryp_data)
+#out.close()

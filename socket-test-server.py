@@ -4,6 +4,7 @@
 import socket		
 import math	 
 import hashlib
+import time
 from cryptography.fernet import Fernet
 
 # next create a socket object 
@@ -16,8 +17,13 @@ def load_key():
     """
     return open("secret.key", "rb").read()
 
+IS_ENCRYPT = True
+CHECKSUM_SIZE = 16 #MD5
+FRAGMENT_NUM = 2
+FRAGMENT_HEADER_SIZE = 2 #bytes
+
 port = 1234
-s.bind(('192.168.43.75', port))		 
+s.bind(('', port))		 
 print ("socket binded to %s" %(port) )
 
 # put the socket into listening mode 
@@ -25,32 +31,31 @@ s.listen(5)
 print ("socket is listening")
 
 
-read_data = open('4thai.png','rb').read()
+#read_data = open('4thai.png','rb').read()
 #encryption
-#key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
-key = load_key()
+key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+#key = load_key()
 f = Fernet(key)
-data = f.encrypt(read_data)
 
-PACKGATE_LEN = 2048 #bytes
-FRAGMENT_HEADER_SIZE = 2 #bytes
-CHECKSUM_SIZE = 16 #MD5
-DATA_SIZE = PACKGATE_LEN - FRAGMENT_HEADER_SIZE - CHECKSUM_SIZE#bytes
-#DATA_LENGTH = FRAGMENT_SIZE + PACKGATE_SIZE + CHECKSUM_SIZE
-fragmnet_num = int(math.ceil(len(data)/DATA_SIZE))
+text = "Hello world my name is Pranpaveen Lay. เลย์ๆ"
+data = text.encode('utf-8')
+if(IS_ENCRYPT):
+    data = f.encrypt(data)
+checksum = hashlib.md5(data).digest()
+
+combine_data = data+checksum
+fragment_size = int(len(combine_data)/2 + 0.5)
 
 
 while True: 
 
     c, addr = s.accept()	 
     print ('Got connection from', addr )
-    c.send(str(fragmnet_num).encode('utf-8').ljust(8))
-    for i in range(fragmnet_num):
+    for i in range(FRAGMENT_NUM):
         #print(i)
-        frag_head = str(i).encode('utf-8').ljust(FRAGMENT_HEADER_SIZE)
-        frag_data = data[i*DATA_SIZE:(i+1)*DATA_SIZE]
-        frag_md5 = hashlib.md5(frag_data).digest()
-        c.send(frag_head+frag_md5+frag_data) 
-    #c.send(b'aaasd')
-    #print(s.recv(1024)) 
+        frag_head = (str(i+1)+str(FRAGMENT_NUM)).encode('utf-8')
+        frag_data = (combine_data[i*fragment_size:(i+1)*fragment_size])
+        c.send(frag_head+frag_data,2)
+        time.sleep(0.00001)
+
     c.close() 
