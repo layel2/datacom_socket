@@ -23,7 +23,7 @@ DATA_SIZE = PACKGATE_LEN - FRAGMENT_HEADER_SIZE - CHECKSUM_SIZE
 
 # connect to the server
 port = 1234
-s.connect(('', port)) 
+s.connect(('192.168.1.50', port)) 
 get_data = []
 rev_pkg = s.recv(PACKGATE_LEN)
 get_data.append(rev_pkg)

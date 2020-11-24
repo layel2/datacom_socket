@@ -23,7 +23,7 @@ FRAGMENT_NUM = 2
 FRAGMENT_HEADER_SIZE = 2 #bytes
 
 port = 1234
-s.bind(('', port))		 
+s.bind(('192.168.1.50', port))		 
 print ("socket binded to %s" %(port) )
 
 # put the socket into listening mode 
@@ -55,7 +55,7 @@ while True:
         #print(i)
         frag_head = (str(i+1)+str(FRAGMENT_NUM)).encode('utf-8')
         frag_data = (combine_data[i*fragment_size:(i+1)*fragment_size])
-        c.send(frag_head+frag_data,2)
-        time.sleep(0.00001)
+        c.send(frag_head+frag_data)
+        time.sleep(0.001)
 
     c.close() 
