@@ -21,13 +21,10 @@ CHECKSUM_SIZE = 16
 DATA_SIZE = PACKGATE_LEN - FRAGMENT_HEADER_SIZE - CHECKSUM_SIZE
 
 
-# connect to the server on local computer 
+# connect to the server
 port = 1234
 s.connect(('', port)) 
 get_data = []
-# receive data from the server 
-#frag_num = int(s.recv(8))
-#print(frag_num,type(frag_num))
 rev_pkg = s.recv(PACKGATE_LEN)
 get_data.append(rev_pkg)
 print(rev_pkg)
@@ -58,8 +55,8 @@ print("Recive md5 is ",rev_checksum)
 msg_checksum = hashlib.md5(rev_msg).digest()
 print("Checksum match :",msg_checksum==rev_checksum)
 
-key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
-#key = load_key()
+#key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+key = load_key()
 f = Fernet(key)
 if(IS_ENCRYPT):
     decrypt_data = f.decrypt(rev_msg)
@@ -67,23 +64,4 @@ print("Decrypt message is ",decrypt_data.decode('utf-8'))
 
 
 
-#print(get_data,type(get_data))
-'''
-for i in range(2):
-    rev_pkg = s.recv(PACKGATE_LEN)
-    num_frag = rev_pkg[:FRAGMENT_HEADER_SIZE]
-    rev_md5 = rev_pkg[FRAGMENT_HEADER_SIZE:FRAGMENT_HEADER_SIZE+CHECKSUM_SIZE]
-    rev_data = rev_pkg[FRAGMENT_HEADER_SIZE+CHECKSUM_SIZE : ]
-    md5 = hashlib.md5(rev_data).digest()
-    if(rev_md5 != md5):
-        print('loss pkg')
-    print(rev_pkg==bytes())
-    get_data += rev_data
-'''
-#decryp_data = f.decrypt(get_data)
-#print(s.recv(2048))
-# close the connection 
 s.close()	 
-#out = open('rec.png','wb')
-#out.write(decryp_data)
-#out.close()

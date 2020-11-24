@@ -33,8 +33,8 @@ print ("socket is listening")
 
 #read_data = open('4thai.png','rb').read()
 #encryption
-key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
-#key = load_key()
+#key = b'uwSs-EoXsrgAeZj9MVB_Rfm1kwlooP6Mwddm9iCmh5c='
+key = load_key()
 f = Fernet(key)
 
 text = "Hello world my name is Pranpaveen Lay. เลย์ๆ"
